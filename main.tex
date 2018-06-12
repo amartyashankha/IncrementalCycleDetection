@@ -1,0 +1,175 @@
+\documentclass[11pt]{article}
+\usepackage[letterpaper,margin=1.00in]{geometry}
+\usepackage{times}
+
+\usepackage{graphicx,amsfonts,amsmath,amssymb,epsfig,hyperref,color}
+\usepackage{algorithm}
+\usepackage{enumitem}
+\usepackage[makeroom]{cancel}
+\usepackage{graphicx}
+\usepackage{ragged2e}
+
+\usepackage{multirow}
+\usepackage{thm-restate}
+
+\usepackage{mathtools}
+
+\usepackage[noend]{algpseudocode}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[colorinlistoftodos]{todonotes}
+
+\usepackage{verbatim}
+\usepackage{comment}
+\usepackage{hyperref}
+
+\usepackage{boxedminipage}
+\usepackage{array}
+\usepackage[normalem]{ulem}
+
+\usepackage{relsize}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+\usepackage{wrapfig}
+\usepackage{lipsum}
+\usepackage{thmtools,thm-restate}
+
+\newtheorem{lem}{Lemma}
+
+%\usepackage{amsmath,amssymb,amsthm}
+%\theoremstyle{definition}
+%\newtheorem{defn}{Definition}
+%\newtheorem{ques}{Question}
+
+%\theoremstyle{remark}
+%\newtheorem{obs}{Observation}
+%\newtheorem{rem}{Remark}
+
+%\theoremstyle{definition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{claim}{Claim}
+\newtheorem{theorem}{Theorem}
+\newtheorem{definition}{Definition}
+\newtheorem{corollary}{Corollary}
+\newtheorem{proposition}{Proposition}
+
+%\setlength{\parindent}{0pt}
+%\setlength{\parskip}{1em}
+\renewcommand{\paragraph}[1]{\vspace{6pt}\noindent {\bf #1.}}
+%\setlength{\parskip}{4pt plus2pt minus0pt}
+\setlist{itemsep=2pt,parsep=0pt,topsep=2pt,partopsep=0pt}
+%\setcounter{tocdepth}{4}
+%\setcounter{secnumdepth}{4}
+
+\def\ll{\left}
+\def\rr{\right}
+\def\RR{\mathbb{R}}
+\def\ee{\mathbb{E}}
+\def\pp{\mathbb{P}}
+\def\bo{\mathcal{O}}
+\def\Bo{\mathlarger{\mathcal{O}}}
+\def\bt{\Theta}
+\def\poly{\mathrm{poly}}
+\newcommand{\matr}[1]{\mathbf{#1}}
+\newcommand{\func}[1]{\textsc{#1}}
+%\newcommand{\function}[1]{\textsc{#1}}
+\newcommand{\distr}[1]{\mathsf{#1}}
+\newcommand{\data}[1]{\mathbf{#1}}
+\def\YES{\textsf{yes}}
+\def\NO{\textsf{no}}
+\def\NULL{\textsf{null}}
+\def\filled{\textup{\textsf{filled}}}
+\def\unfilled{\textup{\textsf{unfilled}}}
+\def\ZERO{\mathsf{0}}
+\def\ONE{\mathsf{1}}
+\def\PHI{\phi}
+\def\LAST{\matr{last}}
+\def\BUCKET{\matr{bucket}}
+\def\BEGIN{\matr{begin}}
+\def\END{\matr{end}}
+\def\ADJ{\matr{A}}
+
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+
+\newcommand{\SL}[2]{\sum\limits_{#1}^{#2}}
+\newcommand{\BSL}[2]{\mathlarger{\mathlarger{\sum}\limits_{#1}^{#2}}}
+\newcommand{\PL}[2]{\prod\limits_{#1}^{#2}}
+\newcommand{\BPL}[2]{\mathlarger{\mathlarger{\prod}\limits_{#1}^{#2}}}
+
+\newcommand{\anak}[1]{\todo[inline,color=green]{Anak: #1}}
+\newcommand{\shankha}[1]{\todo[inline,color=yellow]{\textbf{Shankha:} #1}}
+
+%\usepackage{hyperref}
+\usepackage{multirow}
+
+\usepackage[margin=10pt]{subfig}
+
+\usepackage{graphicx}
+\usepackage{colortbl}
+\newcommand{\lemautorefname}{Lemma}
+\usetikzlibrary{
+  shapes.multipart,
+  matrix,
+  positioning,
+  shapes.callouts,
+  shapes.arrows,
+  calc}
+
+
+\title{Incremental Cycle Detection}
+
+\date{}
+\author{}
+
+
+\begin{document}
+
+
+\maketitle
+\thispagestyle{empty}
+\setcounter{page}{0}
+
+So, the current body of work on this problem is attempting to get a runtime of $n\sqrt m$.
+This is motivated by a "lower-bound" from \cite{lower_bound}(page 15-16 fig. 10).
+This lower bound has some pretty strict assumptions, and in fact the current algorithms (e.g \cite{example})
+which attempt to get $n\sqrt m$ bounds don't even follow these assumptions.
+One assumption is some sort of locality in updates which is precisely what I want to avoid by maintaining a globally high entropy labeling.
+I think they are also assuming integer labels or something similar.
+Even under the preceding assumption, the lower bound assumes that we update labels one by one.
+This is strange because the construction they provide uses directed paths,
+and there is no reason to not use tree based structures to update chains in logarithmic time.
+
+Following is a more concrete formulation:
+
+Consider a static DAG on nodes $i\in [n]$, with a labeling $X : [n] \rightarrow [0,1]$, such that $X(i)$ respects the partial order.
+Also define the least-upper-bound of $i$ as $U(i) = \min_{j : j>i }{X(j)}$. Similarly the greatest-lower-bound is defined as $L(i) = \min_{j : j < i }{X(j)}$.
+
+Call a labeling agnostic, if for all $\forall i, X(i) = \frac{U(i)-L(i)}{2}$. So each label sits exactly in the middle of its LUB and GLB
+(moving forwards, we will relax this to be between $1/3$ and $2/3$ the distance between $U$ and $L$).
+I believe I can show that such a labeling exists and is unique (I think the construction is more interesting than the uniqueness).
+Start with all maximal elements anchored to 1 and all minimal elements anchored to 0.
+At every iteration we find a maximally "dense" chain between two existing anchors, and assign evenly spaced labels to all nodes along that chain. Every node with an assigned label becomes an anchor.
+So, the first step is simply finding the longest chain (say of length k), and assigning labels in increments of 1/k. Subsequent steps look for a path of length k between anchors whose labels differ by d, such that d/k is minimal.
+Essentially we are decomposing the dag into paths. Each path can be some sort of rank maintenance data structure. The online setting will require updates.
+This approach has two immediate drawbacks (with regard to supporting updates).
+Every edge insertion may cause a changes to a large number of chains.
+Querying the label of a vertex will require querying the label of the associated anchors. This will require querying the label of another set of anchors and so on until we reach the extremal nodes (which are always anchored to 0/1).
+One way to circumvent (1) would be to relax the agnostic constraint to $\frac{2\cdot L(i) + U(i)}{3}\le X(i) \le \frac{L(i) + 2\cdot U(i)}{3}$. We will still have equally spaced labels along any chain in our decomposition (the relaxed constraint is only exploited at the intersection of two chains).
+The construction should work as before, except now we allow d/k to be within a factor of 2 of the minimum possible value.
+This essentially means that we can have sub-optimal chains. Concretely, any given chain only needs to be updated once there is an alternative that is twice the length.
+This could nicely bound the number of "chain updates" required.
+We still have to deal with (2) above. Essentially we don't want any long sequence of anchor dependencies for any chain/node.
+The good news is the relaxed agnostic constraint allows a much larger number of possible chain decompositions. Perhaps we can get one that is nicely behaved (i.e. lots of long chains with few dependencie
+
+
+The problem is maintaining topological order (or detecting cycles) in a DAG while edges are revealed one by one (online).
+One way of looking at this is as an online LP feasibility problem, where you get one constraint ($x_i - x_j > \epsilon$) at every timestep.
+Let's say you just want to detect whether the current set of constraints is feasible.
+This may be related to \emph{Chasing Nested Convex Bodies} \cite{nested}
+
+\bibliographystyle{alpha}
+\bibliography{bob.bib}
+
+\end{document}
